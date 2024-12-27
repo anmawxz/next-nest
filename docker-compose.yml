@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  postgres:
+    container_name: app-postgres
+    image: postgres:17
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+
+  backend:
+    container_name: app-be
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    restart: always
+    tty: true
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: user
+      DB_PASSWORD: password
+      DB_DATABASE: mydb
+    depends_on:
+      - postgres
+
+  frontend:
+    container_name: app-api
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/home/node/app
+    depends_on:
+      - backend
+
+networks:
+  default:
+    driver: bridge
